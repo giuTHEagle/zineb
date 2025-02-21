@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Game for You</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffe6f2;
+            font-family: Arial, sans-serif;
+        }
+        #heartContainer {
+            position: relative;
+        }
+        #heart {
+            font-size: 100px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        #heart:hover {
+            transform: scale(1.1);
+        }
+        #speech {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: -60px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: none;
+            white-space: nowrap;
+        }
+        #progress {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #progress .heart {
+            font-size: 24px;
+            color: gray;
+            margin: 0 5px;
+        }
+        #surprise {
+            font-size: 24px;
+            color: #ff6699;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+        #message {
+            font-size: 36px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+            color: #ff3366;
+        }
+        @keyframes bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .bounce {
+            animation: bounce 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div id="heartContainer">
+        <div id="heart">❤️</div>
+        <div id="speech"></div>
+    </div>
+    <div id="progress">
+        <span class="heart">❤️</span>
+        <span class="heart">❤️</span>
+        <span class="heart">❤️</span>
+        <span class="heart">❤️</span>
+        <span class="heart">❤️</span>
+    </div>
+    <div id="surprise">Almost there! Keep clicking darling! 😉</div>
+    <div id="message"></div>
+    <audio id="clickSound" src="click.mp3"></audio>
+    <audio id="finalSound" src="final.mp3"></audio>
+
+    <script>
+        let clicks = 0;
+        const heart = document.getElementById('heart');
+        const speech = document.getElementById('speech');
+        const progress = document.getElementById('progress');
+        const progressHearts = document.querySelectorAll('#progress .heart');
+        const surprise = document.getElementById('surprise');
+        const message = document.getElementById('message');
+        const clickSound = document.getElementById('clickSound');
+        const finalSound = document.getElementById('finalSound');
+
+        const funnyMessages = [
+            "Ouch, that tickles!",
+            "Hey, stop poking me!",
+            "I'm blushing!",
+            "You're making my heart race!",
+            "Careful, I might burst!"
+        ];
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        heart.addEventListener('click', function() {
+            clicks++;
+            if (clicks <= 5) {
+                clickSound.play();
+                heart.style.color = getRandomColor();
+                heart.classList.add('bounce');
+                setTimeout(() => heart.classList.remove('bounce'), 300);
+                progressHearts[clicks - 1].style.color = 'red';
+                if (clicks < 5) {
+                    const randomIndex = Math.floor(Math.random() * funnyMessages.length);
+                    speech.textContent = funnyMessages[randomIndex];
+                    speech.style.display = 'block';
+                    setTimeout(() => speech.style.display = 'none', 2000);
+                }
+                if (clicks == 3) {
+                    surprise.style.display = 'block';
+                    setTimeout(() => surprise.style.display = 'none', 3000);
+                }
+                if (clicks == 5) {
+                    setTimeout(() => {
+                        finalSound.play();
+                        heart.style.display = 'none';
+                        progress.style.display = 'none';
+                        message.style.display = 'block';
+                        message.textContent = 'I love you so much, ZINEB! ❤️';
+                    }, 500);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
