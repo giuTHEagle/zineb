@@ -14,6 +14,7 @@
             margin: 0;
             background-color: #ffe6f2;
             font-family: Arial, sans-serif;
+            overflow: hidden; /* Prevents scrolling if messages go off-screen */
         }
         #heartContainer {
             position: relative;
@@ -28,15 +29,14 @@
         }
         #speech {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: -60px;
             background-color: white;
             padding: 10px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
             display: none;
             white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         #progressContainer {
             width: 300px;
@@ -92,9 +92,15 @@
             50% { transform: scale(1.2); }
             100% { transform: scale(0); }
         }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
         .bounce { animation: bounce 0.3s; }
         .pulse { animation: pulse 0.3s; }
         .burst { animation: burst 0.5s forwards; }
+        .popIn { animation: popIn 0.3s forwards; }
     </style>
 </head>
 <body>
@@ -148,6 +154,37 @@
             return color;
         }
 
+        function showRandomSpeech() {
+            const randomIndex = Math.floor(Math.random() * funnyMessages.length);
+            speech.textContent = funnyMessages[randomIndex];
+
+            // Get window dimensions
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const speechWidth = speech.offsetWidth;
+            const speechHeight = speech.offsetHeight;
+
+            // Calculate random position, ensuring it stays fully visible
+            const maxX = windowWidth - speechWidth - 20; // 20px buffer
+            const maxY = windowHeight - speechHeight - 20;
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+
+            speech.style.left = `${randomX}px`;
+            speech.style.top = `${randomY}px`;
+            speech.style.display = 'block';
+            speech.classList.add('popIn');
+
+            setTimeout(() => {
+                speech.style.opacity = '0';
+                setTimeout(() => {
+                    speech.style.display = 'none';
+                    speech.style.opacity = '1'; // Reset for next time
+                    speech.classList.remove('popIn');
+                }, 300);
+            }, 2000);
+        }
+
         heart.addEventListener('click', function() {
             clicks++;
             if (clicks <= 5) {
@@ -163,11 +200,8 @@
                 }, 300);
 
                 if (clicks < 5) {
-                    const randomIndex = Math.floor(Math.random() * funnyMessages.length);
-                    speech.textContent = funnyMessages[randomIndex];
-                    speech.style.display = 'block';
+                    showRandomSpeech();
                     progressText.textContent = progressLabels[clicks - 1];
-                    setTimeout(() => speech.style.display = 'none', 2000);
                 }
 
                 if (clicks == 3) {
@@ -184,7 +218,7 @@
                             heart.style.display = 'none';
                             progressContainer.style.display = 'none';
                             message.style.display = 'block';
-                            message.textContent = 'I love you so much, [Her Name]! ❤️';
+                            message.textContent = 'I love you so much, ZINEB ! ❤️';
                         }, 500);
                     }, 500);
                 }
