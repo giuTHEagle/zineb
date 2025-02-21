@@ -38,15 +38,30 @@
             display: none;
             white-space: nowrap;
         }
-        #progress {
-            display: flex;
-            justify-content: center;
+        #progressContainer {
+            width: 300px;
+            height: 30px;
+            background-color: #ddd;
+            border-radius: 15px;
             margin-top: 20px;
+            overflow: hidden;
+            position: relative;
         }
-        #progress .heart {
-            font-size: 24px;
-            color: gray;
-            margin: 0 5px;
+        #progressBar {
+            width: 0;
+            height: 100%;
+            background-color: #ff3366;
+            border-radius: 15px;
+            transition: width 0.5s ease, transform 0.2s;
+        }
+        #progressText {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: #333;
+            font-weight: bold;
         }
         #surprise {
             font-size: 24px;
@@ -67,9 +82,19 @@
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
-        .bounce {
-            animation: bounce 0.3s;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
+        @keyframes burst {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(0); }
+        }
+        .bounce { animation: bounce 0.3s; }
+        .pulse { animation: pulse 0.3s; }
+        .burst { animation: burst 0.5s forwards; }
     </style>
 </head>
 <body>
@@ -77,14 +102,11 @@
         <div id="heart">❤️</div>
         <div id="speech"></div>
     </div>
-    <div id="progress">
-        <span class="heart">❤️</span>
-        <span class="heart">❤️</span>
-        <span class="heart">❤️</span>
-        <span class="heart">❤️</span>
-        <span class="heart">❤️</span>
+    <div id="progressContainer">
+        <div id="progressBar"></div>
+        <div id="progressText">0% - Click me!</div>
     </div>
-    <div id="surprise">Almost there! Keep clicking darling! 😉</div>
+    <div id="surprise">Almost there! Keep clicking! 😉</div>
     <div id="message"></div>
     <audio id="clickSound" src="click.mp3"></audio>
     <audio id="finalSound" src="final.mp3"></audio>
@@ -93,8 +115,9 @@
         let clicks = 0;
         const heart = document.getElementById('heart');
         const speech = document.getElementById('speech');
-        const progress = document.getElementById('progress');
-        const progressHearts = document.querySelectorAll('#progress .heart');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressContainer = document.getElementById('progressContainer');
         const surprise = document.getElementById('surprise');
         const message = document.getElementById('message');
         const clickSound = document.getElementById('clickSound');
@@ -106,6 +129,14 @@
             "I'm blushing!",
             "You're making my heart race!",
             "Careful, I might burst!"
+        ];
+
+        const progressLabels = [
+            "20% - Love fuel loading!",
+            "40% - Heartbeat accelerating!",
+            "60% - To Love Town we go!",
+            "80% - Almost at peak mushiness!",
+            "100% - Love overload achieved!"
         ];
 
         function getRandomColor() {
@@ -123,25 +154,38 @@
                 clickSound.play();
                 heart.style.color = getRandomColor();
                 heart.classList.add('bounce');
-                setTimeout(() => heart.classList.remove('bounce'), 300);
-                progressHearts[clicks - 1].style.color = 'red';
+                progressBar.style.width = `${clicks * 20}%`;
+                progressBar.style.backgroundColor = getRandomColor();
+                progressBar.classList.add('pulse');
+                setTimeout(() => {
+                    heart.classList.remove('bounce');
+                    progressBar.classList.remove('pulse');
+                }, 300);
+
                 if (clicks < 5) {
                     const randomIndex = Math.floor(Math.random() * funnyMessages.length);
                     speech.textContent = funnyMessages[randomIndex];
                     speech.style.display = 'block';
+                    progressText.textContent = progressLabels[clicks - 1];
                     setTimeout(() => speech.style.display = 'none', 2000);
                 }
+
                 if (clicks == 3) {
                     surprise.style.display = 'block';
                     setTimeout(() => surprise.style.display = 'none', 3000);
                 }
+
                 if (clicks == 5) {
+                    progressText.textContent = progressLabels[4];
                     setTimeout(() => {
+                        progressContainer.classList.add('burst');
                         finalSound.play();
-                        heart.style.display = 'none';
-                        progress.style.display = 'none';
-                        message.style.display = 'block';
-                        message.textContent = 'I love you so much, ZINEB! ❤️';
+                        setTimeout(() => {
+                            heart.style.display = 'none';
+                            progressContainer.style.display = 'none';
+                            message.style.display = 'block';
+                            message.textContent = 'I love you so much, [Her Name]! ❤️';
+                        }, 500);
                     }, 500);
                 }
             }
